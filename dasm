@@ -1,0 +1,43 @@
+#!/usr/local/bin/python3
+
+import json
+
+def disassemble():
+    blocks = {}
+    current_block = []
+
+    with open('output/local/disassembled.asm', 'r') as f:
+        lines = f.readlines()
+        for index, line in enumerate(lines):
+            line = line.strip().split(' ')
+
+            code_index = line[0][2:]
+
+            opcode = ' '.join(line[1:])
+
+            if opcode == 'JUMPDEST' and len(current_block) > 0:
+                start_index = int(current_block[0][:4], 16)
+
+                blocks['{0:0{1}x}'.format(start_index, 4)] = current_block
+
+                current_block = []
+
+            current_block.append(' '.join([code_index, opcode]))
+
+            if opcode in ['STOP', 'RETURN', 'REVERT', 'INVALID', 'SELFDESTRUCT', 'JUMP', 'JUMPI']:
+                start_index = int(current_block[0][:4], 16)
+
+                blocks['{0:0{1}x}'.format(start_index, 4)] = current_block
+
+                current_block = []
+
+
+    # with open('disassembled.json', 'w') as f:
+    #     json.dump(blocks, f, indent=4)
+
+
+def main():
+    disassemble()
+
+
+main()
